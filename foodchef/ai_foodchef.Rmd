@@ -1,0 +1,124 @@
+---
+title: "닭볶음탕"
+subtitle: "AI 레시피"
+date: "`r format(Sys.Date(), '%Y-%m-%d')`"
+params:    
+  food: "닭볶음탕"
+output:
+  bitReport::page_simpled:
+    back_html: false
+    theme: blue
+paged-footnotes: true
+links-to-footnotes: true
+#knit: pagedown::chrome_print
+---
+
+```{r setup, include=FALSE, message=FALSE, warning=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      fig.retina = 2,
+                      fig.showtext = TRUE,
+                      dev = "ragg_png",
+                      dpi = 300)
+library(ellmer)
+
+Sys.setenv(OPENAI_API_KEY = "Your-API-Key-Here")
+```
+
+```{r create-reportci, echo=FALSE, message=FALSE, warning=FALSE}
+str_css <- ""
+
+##==============================================================================
+## 좌측상단 로고 이미지 설정 정의
+##==============================================================================
+logo_img <- "img/logo_foodchef.png"
+ruler_color <- "blue" 
+
+if (!is.null(logo_img)) {
+  base64_logo <- knitr::image_uri(logo_img)
+  
+  ruler_file <- file.path(system.file(package = "bitReport"), "resources", "image", 
+                          glue::glue("header-ruler-left-{ruler_color}.svg"))
+  base64_ruler <- knitr::image_uri(ruler_file)
+  
+  str_css <- paste0(str_css,
+    ".pagedjs_page.pagedjs_first_page {
+        background-image: url('", base64_logo, "'), url('", base64_ruler, "') !important;
+        background-repeat: no-repeat, no-repeat;
+        background-position: 15mm 3mm, 15mm 28mm;
+        background-size: 30mm, 180mm;
+    }
+    
+    ")
+}
+```
+
+
+```{r create-reportno, echo=FALSE, message=FALSE, warning=FALSE}
+##==============================================================================
+## Report NO 정의
+##==============================================================================
+str_css <- paste0(str_css, 
+".pagedjs_page.pagedjs_first_page .pagedjs_margin-top-left>.pagedjs_margin-content::after {
+    content: '오늘의 AI 쉐프 레시피' !important;
+}
+
+a {
+  string-set: pagedjs-anchor-target attr(href);
+}
+
+a::after {
+  content: ''!important;
+}
+
+h1 {
+  font-size: 2.1em;
+}
+
+h2 {
+  font-size: 1.7em;
+  margin-top: 1.0em;
+}
+
+h3 {
+  font-size: 1.4em;
+  margin-top: 1.5em;
+}
+
+/* 바깥 리스트: 사각형 마커 */
+ul, ol {
+  list-style-type: square;
+}
+
+/* 안쪽 리스트: 속이 빈 원 */
+ul ul, ol ul, ul ol, ol ol {
+  list-style-type: circle;
+}
+")
+
+bitReport::str2css(str_css)
+```
+
+
+```{r chatgpt, echo=FALSE, message=FALSE, warning=FALSE}
+food <- function(chat, food) {
+  chat$chat(interpolate("{{food}}의 요리 레시피는 무엇인가요?"), echo = FALSE)
+}
+
+chat_openai <- chat_openai(
+  model = "gpt-5-chat-latest",
+  api_key = Sys.getenv("OPENAI_API_KEY")
+)
+```
+
+
+# AI 레시피 {-}
+
+
+```{r, eval=TRUE, echo=FALSE, message=FALSE, warning=FALSE, results='asis'}
+food(chat_openai, params$food)
+```
+
+
+
+
+
